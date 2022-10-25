@@ -1,0 +1,73 @@
+---
+- name: Create /etc/prometheus directory
+  file:
+    path: /etc/prometheus
+    state: directory
+    mode: '0755'
+
+- name: Create /var/lib/prometheus directory
+  file:
+    path: /var/lib/prometheus
+    state: directory
+    mode: '0755'
+
+- name: Create /var/log/prometheus directory
+  file:
+    path: /var/log/prometheus
+    state: directory
+    mode: '0755'
+
+- name: Create /var/run/prometheus
+  file:
+    path: /var/run/prometheus
+    state: directory
+    mode: '0755'
+
+- name: Download and unarchive Prometheus
+  unarchive:
+    src: "https://github.com/prometheus/prometheus/releases/download/v2.2.1/prometheus-2.2.1.linux-amd64.tar.gz"
+    dest: /tmp/
+    remote_src: yes
+  register: prometheus_archive
+
+- name: Copy prometheus to /usr/local/bin
+  shell: "cp /tmp/prometheus-2.2.1.linux-amd64/prometheus /usr/local/bin/"
+  when: prometheus_archive.changed
+
+- name: Copy promtool to /usr/local/bin
+  shell: "cp /tmp/prometheus-2.2.1.linux-amd64/promtool /usr/local/bin/"
+  when: prometheus_archive.changed
+
+- name: Make prometheus executable
+  file:
+    path: /usr/local/bin/prometheus
+    mode: u+x,g+x,o+x
+
+- name: Make promtool executable
+  file:
+    path: /usr/local/bin/promtool
+    mode: u+x,g+x,o+x
+
+- name: Copy prometheus.yml to /etc/prometheus
+  shell: "cp /tmp/prometheus-2.2.1.linux-amd64/prometheus.yml /etc/prometheus/"
+  when: prometheus_archive.changed
+
+- name: Copy consoles to /etc/promethus
+  shell: "cp -r /tmp/prometheus-2.2.1.linux-amd64/consoles /etc/prometheus/"
+  when: prometheus_archive.changed
+
+- name: Copy console_libraries to /etc/promethus
+  shell: "cp -r /tmp/prometheus-2.2.1.linux-amd64/console_libraries /etc/prometheus/"
+  when: prometheus_archive.changed
+
+- name: Copy Prometheus systemd.service to /etc/systemd/system/prometheus.service
+  copy:
+    src: "{{ src }}"
+    dest: /etc/systemd/system/prometheus.service
+    mode: '0755'
+
+- name: Start and enable Prometheus service
+  service:
+    name: prometheus
+    state: started
+    enabled: yes

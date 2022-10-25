@@ -1,0 +1,30 @@
+---
+- name: Installing Kibana (ubuntu)
+  include_role:
+    name: installubuntupkg
+  vars:
+    package: kibana
+
+- name: Configuring Kibana.yml (Ubuntu)
+  lineinfile:
+    path: /etc/kibana/kibana.yml
+    regexp: "^#server.port.*"
+    line: "server.port: 5601"
+
+- name: Editing Server Hostname to kibana.yml (ubuntu)
+  lineinfile:
+    path: /etc/kibana/kibana.yml
+    regexp: "^#server.host.*"
+    line: 'server.host: "localhost"'
+
+- name: Editing elasticsearch.hosts (ubuntu)
+  lineinfile:
+    path: /etc/kibana/kibana.yml
+    regexp: "^#elasticsearch.hosts.*"
+    line: 'elasticsearch.hosts: ["http://localhost:9200"]'
+
+- name: Start and Enable kibana (Ubuntu)
+  service:
+    name: kibana
+    state: started
+    enabled: yes

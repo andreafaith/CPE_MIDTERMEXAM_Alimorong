@@ -1,0 +1,6 @@
+---
+- name: Stopping UFW (Ubuntu)
+  service:
+    name: ufw
+    state: stopped
+    enabled: no

@@ -1,0 +1,29 @@
+# GLOBAL VARIABLES
+remote_user: andreafaith
+
+# Elastic Search Repo
+elastic_repo: elasticsearch.repo
+
+# influxdb repo
+influxdb_repo: influxdb.repo
+
+# grafana repo
+grafana_repo: grafana.repo
+
+# Logstash conf
+logstash_conf: logstash.conf
+
+# Prometheus
+prometheus_src: prometheus.service
+
+# Nagios User and Pass
+nagios_user: nagiosadmin
+nagios_pass: 09170113
+
+# LAMP Variables
+domain: andreafaith
+owner: andreafaith
+group: andreafaith
+index_html: index.html
+ubuntu_src: andreafaith-ubuntu.conf
+centos_src: andreafaith-centos.conf

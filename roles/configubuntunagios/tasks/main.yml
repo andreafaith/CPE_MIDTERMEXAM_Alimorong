@@ -1,0 +1,140 @@
+---
+- name: Stop Firewall
+  service:
+    name: ufw
+    state: stopped
+    enabled: no
+
+- name: Download and unarchive Nagios Core source
+  unarchive:
+    src: https://github.com/NagiosEnterprises/nagioscore/archive/nagios-4.4.5.tar.gz
+    dest: /tmp/
+    remote_src: yes
+  register: nagios_source
+
+- name: Create Make file
+  shell: cd /tmp/nagioscore-nagios-4.4.5; sh /tmp/nagioscore-nagios-4.4.5/configure --with-httpd-conf=/etc/apache2/sites-enabled
+  register: make_file
+  when: nagios_source.changed
+
+- name: Compile from source
+  make:
+    chdir: /tmp/nagioscore-nagios-4.4.5/
+    target: all
+  become: yes
+  when: make_file.changed
+
+- name: Create user and group
+  make:
+    chdir: /tmp/nagioscore-nagios-4.4.5
+    target: install-groups-users
+  become: yes
+  when: make_file.changed
+
+- name: Add www-data user to nagios group
+  user:
+    name: www-data
+    groups: nagios
+    append: yes
+
+- name: Install binaries
+  make:
+    chdir: /tmp/nagioscore-nagios-4.4.5
+    target: install
+  become: yes
+  when: make_file.changed
+
+- name: Install service/daemon
+  make:
+    chdir: /tmp/nagioscore-nagios-4.4.5
+    target: install-daemoninit
+  become: yes
+  when: make_file.changed
+
+- name: Install command mode
+  make:
+    chdir: /tmp/nagioscore-nagios-4.4.5
+    target: install-commandmode
+  become: yes
+  when: make_file.changed
+
+- name: Install configuration files
+  make:
+    chdir: /tmp/nagioscore-nagios-4.4.5
+    target: install-config
+  become: yes
+  when: make_file.changed
+
+- name: Install Apache config files
+  make:
+    chdir: /tmp/nagioscore-nagios-4.4.5
+    target: install-webconf
+  become: yes
+  when: make_file.changed
+  register: install_webconf
+
+- name: Enable rewrite module
+  apache2_module:
+    state: present
+    name: rewrite
+
+- name: Enable cgi module
+  apache2_module:
+    state: present
+    name: cgi
+
+- name: Pip install passlib
+  pip:
+    name: passlib
+    state: present
+
+- name: Create admin username and password for authentication
+  htpasswd:
+    path: /usr/local/nagios/etc/htpasswd.users
+    name: "{{ nagios_user }}"
+    password: "{{ nagios_password }}"
+  register: useradded
+
+- name: Restart apache2
+  service:
+    name: apache2
+    state: restarted
+  when: install_webconf.changed or useradded.changed
+
+- name: Start and enable nagios
+  service:
+    name: nagios
+    state: started
+    enabled: yes
+  when: install_webconf.changed
+
+- name: Download and unarchive Nagios Plugins
+  unarchive:
+    src: https://github.com/nagios-plugins/nagios-plugins/archive/release-2.2.1.tar.gz
+    dest: /tmp/
+    remote_src: yes
+  register: nagios_plugin
+
+- name: Create Make file
+  shell: cd /tmp/nagios-plugins-release-2.2.1; sh /tmp/nagios-plugins-release-2.2.1/tools/setup; sh /tmp/nagios-plugins-release-2.2.1/configure
+  register: plugin_make_file
+  when: nagios_plugin.changed
+
+- name: Compile from source
+  make:
+    chdir: /tmp/nagios-plugins-release-2.2.1/
+  become: yes
+  when: plugin_make_file.changed
+
+- name: Compile from source
+  make:
+    chdir: /tmp/nagios-plugins-release-2.2.1/
+    target: install
+  become: yes
+  when: plugin_make_file.changed
+
+- name: Restart Nagios
+  service:
+    name: nagios
+    state: restarted
+  when: plugin_make_file.changed

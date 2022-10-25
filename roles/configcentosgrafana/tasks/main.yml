@@ -1,0 +1,24 @@
+---
+- name: Adding Grafana to Repo
+  copy:
+    src: "{{ grafana_repo }}"
+    dest: "/etc/yum.repos.d/{{ grafana_repo }}"
+    owner: "{{ remote_user }}"
+    group: "{{ remote_user }}"
+    mode: 0755
+
+- name: Make cache (CentOS)
+  shell: "dnf makecache"
+  register: dnf_cache
+
+- name: Install and update grafana (centos)
+  dnf:
+    name: grafana
+    state: latest
+    update_cache: yes
+
+- name: Start and enable Grafana (CentOS)
+  service:
+    name: grafana-server
+    state: started
+    enabled: yes

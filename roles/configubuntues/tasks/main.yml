@@ -1,0 +1,56 @@
+---
+- name: Adding Elastic Repository (Ubuntu)
+  apt_key:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+
+- name: Installing apt-transport-https (Ubuntu)
+  include_role:
+    name: installubuntupkg
+  vars:
+    package: apt-transport-https
+
+- name: Creating elastic-7.x.list to repo (Ubuntu)
+  file:
+    path: "/etc/apt/sources.list.d/elastic-7.x.list"
+    state: touch
+    owner: "{{ remote_user }}"
+    group: "{{ remote_user }}"
+
+- name: Appending repository (Ubuntu)
+  lineinfile:
+    path: "/etc/apt/sources.list.d/elastic-7.x.list"
+    line: "deb https://artifacts.elastic.co/packages/7.x/apt stable main"
+
+- name: Install and update elasticsearch (Ubuntu)
+  apt:
+    name: elasticsearch
+    state: present
+    update_cache: yes
+
+- name: Configuring elasticsearch.yml (Ubuntu)
+  lineinfile:
+    path: /etc/elasticsearch/elasticsearch.yml
+    regexp: "^#network.host.*"
+    line: "network.host: 192.168.122.125"
+
+- name: Configuring elasticsearch.yml (Ubuntu)
+  lineinfile:
+    path: /etc/elasticsearch/elasticsearch.yml
+    regexp: "^#http.port.*"
+    line: "http.port: 9200"
+
+- name: Configuring JVM options (Ubuntu)
+  lineinfile:
+    path: /etc/elasticsearch/jvm.options
+    line: "{{ item }}"
+    state: present
+  with_items:
+    - "-Xms512m"
+    - "-Xmx512m"
+
+- name: Start and Enable Elastic Search (Ubuntu)
+  service:
+    name: elasticsearch
+    state: started
+    enabled: yes

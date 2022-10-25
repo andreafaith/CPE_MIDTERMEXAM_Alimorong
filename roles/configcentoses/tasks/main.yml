@@ -1,0 +1,41 @@
+---
+- name: Import key Elasticsearch (CentOS)
+  rpm_key: 
+    key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+
+- name: Adding Elasticsearch Repo (CentOS)
+  copy:
+    src: "{{ elastic_repo }}"
+    dest: "/etc/yum.repos.d/{{ elastic_repo }}"
+    owner: "{{ remote_user }}"
+    group: "{{ remote_user }}"
+
+- name: Install and Update Elasticsearch (CentOS)
+  dnf:
+    name: elasticsearch
+    state: latest
+    update_cache: yes
+
+- name: Configure Elasticsearch (CentOS)
+  lineinfile:
+    path: /etc/elasticsearch/elasticsearch.yml
+    regexp: "^#network.host.*"
+    line: "network.host: 192.168.20.16"
+
+- name: Configure Elasticsearch (CentOS)
+  lineinfile:
+    path: /etc/elasticsearch/elasticsearch.yml
+    regexp: "^#http.port.*"
+    line: "http.port: 9200"
+
+- name: Start and Enable Elasticsearch (CentOS)
+  service:
+    name: elasticsearch
+    state: started
+    enabled: yes
+    ignore_errors: yes
+
+- name: Reboot CentOS
+  reboot:
+    reboot_timeout: 1

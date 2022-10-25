@@ -1,0 +1,29 @@
+---
+- name: Install Kibana (CentOS)
+  include_role:
+    name: installcentospkg
+  vars:
+    package: kibana
+
+- name: "Configure Kibana server.port (CentOS)"
+  lineinfile:
+    path: /etc/kibana/kibana.yml
+    regexp: "^#server.port.*"
+    line: "server.port: 5601"
+
+- name: Editing Server Host (CentOS)
+  lineinfile:
+    path: /etc/kibana/kibana.yml
+    regexp: "^#server.host.*"
+    line: 'server.host: "localhost"'
+
+- name: Editing elasticsearch hosts (CentOS)
+  lineinfile:
+    path: /etc/kibana/kibana.yml
+    regexp: '^#elasticsearch.hosts: ["http://localhost:9200"]'
+
+- name: Start and Enable Kibana (CentOS)
+  service:
+    name: kibana
+    state: started
+    enabled: yes
