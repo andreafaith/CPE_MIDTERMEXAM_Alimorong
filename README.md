@@ -1,4 +1,4 @@
-1. Create a repository in your GitHub account and label it CPE_MIDEXAM_SURNAME. 
+/* 1. Create a repository in your GitHub account and label it CPE_MIDEXAM_SURNAME. 
 2. Clone the repository and do the following: 
    2.1 Create an Ansible playbook that does the following with an input of a config.yaml file and arranged Inventory file: 
    2.2 Install and configure Elastic Stack in separate hosts (Elastic Search, Kibana, Logstash) • Install Nagios in one host 
@@ -6,10 +6,10 @@
    2.4 Install Lamp Stack in separate hosts (Httpd + Php,Mariadb) 
 3. Document all your tasks using this document. Provide proofs of all the ansible playbooks codes and successful installations.
 4. Document the push and commit from the local repository to GitHub. 
-5. Finally, paste also the link of your GitHub repository in the documentation
+5. Finally, paste also the link of your GitHub repository in the documentation */
 
 
-├── ansible.cfg
+/* ├── ansible.cfg
 ├── config.yml
 ├── files
 │   ├── andreafaith
@@ -80,4 +80,4 @@
     │       └── main.yml
     └── stopufw
         └── tasks
-            └── main.yml
+            └── main.yml */
